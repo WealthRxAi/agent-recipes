@@ -1,0 +1,102 @@
+[
+  {
+    "id": "refactor-prod-ready",
+    "title": "Make a project production-ready",
+    "category": "refactor-code",
+    "agent": "Claude Code",
+    "use_case": "A working prototype needs hardening — error handling, config, logging, tests, CI — before real users touch it.",
+    "prompt": "Make this project production-ready. First produce a checklist and a prioritized plan, then execute top to bottom, pausing after the plan for my OK.\n\nCover:\n1. Config: move hardcoded values to env, add `.env.example`, fail fast on missing required vars.\n2. Errors: consistent error handling, no swallowed exceptions, user-safe messages.\n3. Logging: structured logs, no secrets in logs.\n4. Input validation on all external inputs.\n5. Tests for the critical paths + a CI workflow that runs them.\n6. A README with setup, run, and deploy steps.\n7. Health check endpoint or equivalent.\n\nList what you changed and what you deliberately left as a TODO with reasons.",
+    "safety_notes": "Work on a branch and keep changes reviewable (commit per concern). Do not introduce paid services. Never log secrets/PII. Don't change behavior while refactoring — keep tests green at each step.",
+    "expected_output": "A hardened repo with env config, robust error handling, structured logging, input validation, critical-path tests, a CI workflow, a health check, and a setup/deploy README — plus a list of remaining TODOs."
+  },
+  {
+    "id": "refactor-extract-modules",
+    "title": "Split a god file into clean modules",
+    "category": "refactor-code",
+    "agent": "Cursor",
+    "use_case": "One giant file does everything and is impossible to navigate or test.",
+    "prompt": "Refactor {{BIG_FILE}} into small, cohesive modules without changing behavior.\n\n1. Map the file: list every function/class and group them by responsibility.\n2. Propose a target module layout and show it before moving code.\n3. Extract one cohesive group at a time into its own file with clear exports; update imports.\n4. Keep public APIs identical (re-export from the old path if other code depends on it).\n5. Run tests (or add characterization tests first if there are none) after each extraction.\n6. End with a short map of the new structure.\n\nBehavior must not change — this is a pure refactor.",
+    "safety_notes": "If there are no tests, add characterization tests capturing current behavior BEFORE refactoring. Move in small, test-verified steps. Preserve public APIs (re-export if needed) so callers don't break. Work on a branch.",
+    "expected_output": "The god file split into cohesive modules, identical public APIs, green tests at every step (with characterization tests added if none existed), and a map of the new structure."
+  },
+  {
+    "id": "refactor-types-strict",
+    "title": "Migrate a codebase to strict TypeScript",
+    "category": "refactor-code",
+    "agent": "Codex",
+    "use_case": "You want the safety of TypeScript strict mode but the codebase isn't ready for it yet.",
+    "prompt": "Migrate this codebase to TypeScript `strict` mode incrementally.\n\n1. Turn on `strict` in tsconfig and run `tsc --noEmit` to get the full error list. Report the count.\n2. Fix errors file-by-file or rule-by-rule (start with `strictNullChecks`). Prefer real types over casts.\n3. Where a proper type is genuinely hard, add a narrowly-scoped `// TODO: tighten` with the reason — never a blanket `any`.\n4. Re-run after each batch and report remaining count.\n5. Keep the build and tests green throughout.\n\nGoal: `strict: true` with zero errors and minimal escape hatches.",
+    "safety_notes": "Do this incrementally on a branch; don't flip all strict flags and rewrite everything at once. No blanket `any`/`@ts-ignore` — every escape hatch must be narrow and justified. Keep tests green at each batch.",
+    "expected_output": "`strict: true` enabled, zero `tsc --noEmit` errors, minimal and individually-justified escape hatches, and green tests."
+  },
+  {
+    "id": "refactor-dedupe",
+    "title": "Remove duplicate code safely",
+    "category": "refactor-code",
+    "agent": "Claude Code",
+    "use_case": "Copy-pasted logic is scattered across the codebase and changes have to be made in many places.",
+    "prompt": "Find and remove duplicated logic safely.\n\n1. Identify the top duplicated blocks/functions ({{SCOPE or 'across the repo'}}). Show the duplicates with file:line before changing anything.\n2. For each cluster, confirm the instances are truly equivalent (watch for subtle differences). Note any that only look similar.\n3. Extract a single shared, well-named function/module and replace each call site.\n4. Preserve any intentional differences via parameters — don't merge things that should stay separate.\n5. Run tests after each consolidation.\n\nReport duplicates found, what you merged, and what you deliberately left separate and why.",
+    "safety_notes": "Verify instances are truly identical before merging — false 'duplicates' with subtle differences cause bugs. Refactor in small, test-backed steps. Don't over-abstract; leave genuinely different code separate. Work on a branch.",
+    "expected_output": "A list of duplicate clusters with file:line, shared helpers replacing them, intentional differences preserved via params, green tests, and notes on what was left separate."
+  },
+  {
+    "id": "refactor-async-await",
+    "title": "Modernize callbacks to async/await",
+    "category": "refactor-code",
+    "agent": "Gemini CLI",
+    "use_case": "Legacy callback/promise-chain code is hard to read and error-prone.",
+    "prompt": "Convert callback-style and promise-chain code to async/await without changing behavior.\n\n1. List the files/functions using callbacks or `.then()` chains.\n2. Convert each to async/await, preserving error semantics (every reject path becomes a try/catch or propagates).\n3. Keep concurrency where it existed — use `Promise.all` instead of awaiting in a loop when calls were parallel.\n4. Make sure errors are still handled, not swallowed.\n5. Run tests after each file.\n\nBehavior, ordering, and error handling must stay identical.",
+    "safety_notes": "Preserve error handling exactly — async/await makes it easy to accidentally swallow a rejection. Don't serialize calls that used to run in parallel (use Promise.all). Convert and test one file at a time on a branch.",
+    "expected_output": "Callbacks/promise-chains converted to async/await with identical behavior, preserved error handling and concurrency, and green tests after each file."
+  },
+  {
+    "id": "ui-screenshot-to-site",
+    "title": "Turn a screenshot into a working website",
+    "category": "design-ui",
+    "agent": "Claude Code",
+    "use_case": "You have an image of a page (a competitor, a mockup, a sketch) and want a real, responsive HTML/CSS page that matches it.",
+    "prompt": "Recreate the attached screenshot at {{SCREENSHOT_PATH}} as a responsive website.\n\n1. Describe the layout sections you see (header, hero, features, footer, etc.) before coding.\n2. Build it with semantic HTML and modern CSS (fl/ grid). Match layout, spacing, font sizes/weights, and colors as closely as you can.\n3. Extract repeated colors/spacing into CSS variables.\n4. Make it responsive: verify it looks right at 375px, 768px, and 1280px.\n5. Use accessible markup (alt text, labels, contrast) and placeholder images/copy where the screenshot is unclear.\n\nNo frameworks unless I ask — plain HTML/CSS (and minimal JS only if needed).",
+    "safety_notes": "Do not copy trademarked logos, brand assets, or real photos — use placeholders. Don't fabricate real content. Keep it accessible (contrast, alt text). This recreates layout/style, not someone's proprietary assets.",
+    "expected_output": "A responsive, accessible HTML/CSS page that closely matches the screenshot across 375/768/1280px, with CSS variables for the palette and placeholders where the image was unclear."
+  },
+  {
+    "id": "ui-screenshot-to-react",
+    "title": "Turn a Figma-like screenshot into React components",
+    "category": "design-ui",
+    "agent": "Cursor",
+    "use_case": "You have a design screenshot and want clean, reusable React + Tailwind components that match it.",
+    "prompt": "Look at the screenshot at {{SCREENSHOT_PATH}} and rebuild it as React + Tailwind.\n\n1. Break the screen into a component tree and list it first.\n2. Implement each component in its own file under `src/components/`.\n3. Match spacing, font sizes, weights, and colors closely; extract repeated values into Tailwind theme tokens.\n4. Use semantic, accessible markup (buttons are <button>, inputs have labels).\n5. Pass copy/data via props — don't hardcode text inside components.\n6. Add a `Showcase` page that renders every component.\n\nBuild from primitives — don't pull in a UI kit.",
+    "safety_notes": "Do not invent real user data, logos, or trademarked assets — use placeholders. Keep components presentational/pure. Work on a branch.",
+    "expected_output": "A component tree, one file per component under src/components/, a Showcase page, accessible markup, and a result that closely matches the screenshot."
+  },
+  {
+    "id": "ui-landing-from-notes",
+    "title": "Create a landing page from product notes",
+    "category": "design-ui",
+    "agent": "Claude Code",
+    "use_case": "You have rough notes about a product and want a polished, conversion-focused landing page.",
+    "prompt": "Turn these product notes into a high-converting landing page:\n\n{{PASTE_PRODUCT_NOTES}}\n\n1. Extract the core value prop, audience, and top 3 benefits. Show me your one-line headline + subhead before building.\n2. Structure: hero (headline, subhead, CTA), social-proof slot, 3 benefits, how-it-works (3 steps), FAQ, final CTA, footer.\n3. Write punchy, specific copy from the notes — no vague filler, no invented metrics.\n4. Build it responsive with semantic HTML/CSS (or {{FRAMEWORK}} if I name one). Accessible and fast.\n5. Add a single email-capture form that posts to a placeholder endpoint.\n\nKeep claims honest — don't invent testimonials or numbers.",
+    "safety_notes": "Never fabricate testimonials, customer logos, or metrics — use clearly-marked placeholders. Keep copy honest. Ensure accessibility (contrast, labels, focus states). Work on a branch.",
+    "expected_output": "A responsive, accessible landing page with a clear headline/subhead, benefits, how-it-works, FAQ, CTAs, and an email-capture form — copy grounded in the notes, no fabricated proof."
+  },
+  {
+    "id": "ui-csv-to-dashboard",
+    "title": "Turn a CSV into a dashboard",
+    "category": "design-ui",
+    "agent": "Codex",
+    "use_case": "You have a CSV and want an interactive dashboard with charts and filters — no backend, no paid tools.",
+    "prompt": "Build a dashboard for the CSV at {{CSV_PATH}}.\n\n1. Read the header and a few rows; infer each column's type. Report the schema you detected.\n2. Build a single-page dashboard (plain HTML/CSS/JS, parse CSV in-browser) with: summary KPI cards, 2-3 relevant charts, a filterable/sortable table, and a search box.\n3. Use a tiny charting approach (canvas or a single lightweight lib via CDN) — no build step, no paid services.\n4. Handle missing/dirty values gracefully.\n5. Make it responsive and load the CSV from a local file input so any CSV works.\n\nNo backend, no API keys.",
+    "safety_notes": "Parse everything client-side — don't upload the CSV anywhere. Treat the data as private. Sanitize values before injecting into the DOM to avoid XSS. Handle malformed rows without crashing.",
+    "expected_output": "A single-page, client-side dashboard with detected schema, KPI cards, charts, a filterable/searchable table, a file picker for any CSV, and graceful handling of dirty data — no backend."
+  },
+  {
+    "id": "ui-dark-mode",
+    "title": "Add accessible dark mode",
+    "category": "design-ui",
+    "agent": "Gemini CLI",
+    "use_case": "Your app only has a light theme and you want a proper, accessible dark mode with a toggle.",
+    "prompt": "Add a dark mode to this app.\n\n1. Find hardcoded colors and replace them with CSS variables (or theme tokens) for both light and dark.\n2. Add a toggle that respects `prefers-color-scheme` by default and persists the user's choice (localStorage).\n3. Avoid pure black on pure white — use tuned neutrals. Verify text/background contrast meets WCAG AA.\n4. Handle images, borders, shadows, and focus states in dark mode too.\n5. Show me the before/after token map.\n\nNo flash of wrong theme on load.",
+    "safety_notes": "Verify WCAG AA contrast for both themes — dark mode often fails contrast. Prevent the flash-of-incorrect-theme by setting the theme before first paint. Don't break existing light-mode styling. Work on a branch.",
+    "expected_output": "A theme-token system, an accessible dark mode meeting WCAG AA contrast, a persistent toggle that respects system preference, no theme flash on load, and a before/after token map."
+  }
+]

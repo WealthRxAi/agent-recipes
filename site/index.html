@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>agent-recipes — copy-paste recipes for AI coding agents</title>
+<meta name="description" content="Free copy-paste recipes for Claude Code, Codex, Cursor, Gemini CLI, and AI coding agents. Search locally, copy, paste, ship." />
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #141821;
+    --panel-2: #1b212d;
+    --border: #262d3b;
+    --text: #e6e9ef;
+    --muted: #98a2b3;
+    --accent: #7c93ff;
+    --accent-2: #51e1b0;
+    --shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fb; --panel: #ffffff; --panel-2: #f0f2f7; --border: #e4e7ee;
+      --text: #121620; --muted: #5b6472; --accent: #4257e0; --accent-2: #0f9d72;
+      --shadow: 0 8px 30px rgba(20,30,60,.08);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  a { color: var(--accent); }
+  header {
+    padding: 56px 20px 28px; text-align: center;
+    background: radial-gradient(1200px 400px at 50% -120px, rgba(124,147,255,.18), transparent 60%);
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 40px; margin: 0 0 8px; letter-spacing: -0.02em; }
+  header h1 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--accent); }
+  header p { color: var(--muted); margin: 0 auto; max-width: 620px; font-size: 18px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 20px 80px; }
+  .controls { position: sticky; top: 0; z-index: 5; padding: 16px 0; background: var(--bg); }
+  #q {
+    width: 100%; padding: 14px 16px; font-size: 17px; color: var(--text);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; outline: none;
+  }
+  #q:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,147,255,.2); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    padding: 6px 12px; font-size: 13px; border-radius: 999px; cursor: pointer;
+    background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+  }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .meta { color: var(--muted); font-size: 14px; margin: 8px 2px 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow);
+  }
+  .card h3 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11px; padding: 3px 8px; border-radius: 6px; background: var(--panel-2); color: var(--muted); }
+  .tag.cat { color: var(--accent-2); }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+  .row { display: flex; gap: 8px; margin-top: auto; }
+  button.act {
+    flex: 1; padding: 8px 10px; font-size: 13px; cursor: pointer; border-radius: 8px;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  }
+  button.act:hover { border-color: var(--accent); }
+  dialog {
+    width: min(760px, 92vw); border: 1px solid var(--border); border-radius: 16px;
+    background: var(--panel); color: var(--text); padding: 0; box-shadow: var(--shadow);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.55); }
+  .modal-head { padding: 20px 22px 12px; border-bottom: 1px solid var(--border); }
+  .modal-head h2 { margin: 0 0 6px; font-size: 22px; }
+  .modal-body { padding: 18px 22px 22px; max-height: 70vh; overflow: auto; }
+  .modal-body h4 { margin: 18px 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  pre {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .close { position: absolute; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; padding: 0 22px 18px; }
+  .empty { text-align: center; color: var(--muted); padding: 60px 0; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 20px 60px; }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--accent-2); color: #04130d; padding: 10px 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="mono">agent-recipes</span></h1>
+  <p>Free, copy-paste recipes for Claude Code, Codex, Cursor, Gemini CLI, and any AI coding agent. Search, copy, paste, ship.</p>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <input id="q" type="search" placeholder="Search recipes… (e.g. landing page, tests, security)" autocomplete="off" />
+    <div class="filters" id="filters"></div>
+  </div>
+  <div class="meta" id="meta"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>No recipes match. Try another search.</div>
+</div>
+
+<dialog id="modal">
+  <div class="modal-head">
+    <h2 id="m-title"></h2>
+    <div class="tags" id="m-tags"></div>
+  </div>
+  <div class="modal-body">
+    <h4>Use case</h4>
+    <p id="m-use"></p>
+    <h4>Prompt</h4>
+    <pre id="m-prompt"></pre>
+    <h4>Safety notes</h4>
+    <p id="m-safety"></p>
+    <h4>Expected output</h4>
+    <p id="m-output"></p>
+  </div>
+  <div class="modal-actions">
+    <button class="act" id="m-copy" style="flex:0 0 auto;">Copy prompt</button>
+    <button class="act" id="m-close" style="flex:0 0 auto;">Close</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast">Copied!</div>
+
+<footer>
+  Open source &amp; MIT licensed ·
+  <a href="https://github.com/agent-recipes/agent-recipes">Star on GitHub</a> ·
+  Built for builders.
+</footer>
+
+<script src="./recipes.js"></script>
+<script>
+  // Falls back gracefully if recipes.js didn't load.
+  var RECIPES = (window.RECIPES || []).slice();
+  var state = { q: "", cat: "all" };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var grid = $("grid"), meta = $("meta"), empty = $("empty");
+
+  function categories() {
+    var set = {};
+    RECIPES.forEach(function (r) { set[r.category] = (set[r.category] || 0) + 1; });
+    return Object.keys(set).sort();
+  }
+
+  function renderFilters() {
+    var box = $("filters");
+    var cats = ["all"].concat(categories());
+    box.innerHTML = "";
+    cats.forEach(function (c) {
+      var b = document.createElement("button");
+      b.className = "chip" + (state.cat === c ? " active" : "");
+      b.textContent = c === "all" ? "All" : c;
+      b.onclick = function () { state.cat = c; renderFilters(); render(); };
+      box.appendChild(b);
+    });
+  }
+
+  function matches(r) {
+    if (state.cat !== "all" && r.category !== state.cat) return false;
+    if (!state.q) return true;
+    var hay = (r.id + " " + r.title + " " + r.category + " " + r.agent + " " + r.use_case + " " + r.prompt).toLowerCase();
+    return hay.indexOf(state.q) !== -1;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function render() {
+    var list = RECIPES.filter(matches);
+    grid.innerHTML = "";
+    empty.hidden = list.length > 0;
+    meta.textContent = list.length + " of " + RECIPES.length + " recipes";
+    list.forEach(function (r) {
+      var card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        '<div class="tags"><span class="tag cat">' + esc(r.category) + '</span>' +
+        '<span class="tag">' + esc(r.agent) + '</span></div>' +
+        '<h3>' + esc(r.title) + '</h3>' +
+        '<p>' + esc(r.use_case) + '</p>' +
+        '<div class="row">' +
+        '<button class="act" data-open>View</button>' +
+        '<button class="act" data-copy>Copy prompt</button>' +
+        '</div>';
+      card.querySelector("[data-open]").onclick = function () { openModal(r); };
+      card.querySelector("[data-copy]").onclick = function () { copy(r.prompt); };
+      grid.appendChild(card);
+    });
+  }
+
+  function openModal(r) {
+    $("m-title").textContent = r.title;
+    $("m-tags").innerHTML =
+      '<span class="tag cat">' + esc(r.category) + '</span>' +
+      '<span class="tag">' + esc(r.agent) + '</span>' +
+      '<span class="tag">' + esc(r.id) + '</span>';
+    $("m-use").textContent = r.use_case;
+    $("m-prompt").textContent = r.prompt;
+    $("m-safety").textContent = r.safety_notes;
+    $("m-output").textContent = r.expected_output;
+    $("m-copy").onclick = function () { copy(r.prompt); };
+    $("modal").showModal();
+  }
+
+  function copy(text) {
+    var done = function () { showToast(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  var toastT;
+  function showToast() {
+    var t = $("toast"); t.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("show"); }, 1400);
+  }
+
+  $("m-close").onclick = function () { $("modal").close(); };
+  $("q").addEventListener("input", function (e) { state.q = e.target.value.trim().toLowerCase(); render(); });
+
+  if (!RECIPES.length) {
+    meta.innerHTML = 'Could not load recipes. If you opened this file directly, run <code>npm run build</code> first, or serve the folder with <code>npx serve site</code>.';
+  } else {
+    renderFilters();
+    render();
+  }
+</script>
+</body>
+</html>

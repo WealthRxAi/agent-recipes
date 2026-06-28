@@ -1,0 +1,102 @@
+[
+  {
+    "id": "saas-mvp-one-repo",
+    "title": "Build a full SaaS MVP in one repo",
+    "category": "build-a-saas",
+    "agent": "Claude Code",
+    "use_case": "You have an idea and want a working SaaS skeleton (auth, dashboard, data, deploy config) in a single repo without weeks of setup.",
+    "prompt": "Build a minimal but real SaaS MVP for: {{ONE_LINE_IDEA}}.\n\nStack: a single repo, framework {{FRAMEWORK e.g. Next.js / SvelteKit / Express+React}}, local file or SQLite storage (no paid services).\n\n1. Propose the smallest feature set that makes the product usable, then stop and show it to me before coding.\n2. Scaffold: landing page, sign-up/login (email + password, hashed), an authenticated dashboard, and one core CRUD entity ({{CORE_ENTITY}}).\n3. Persist data in SQLite (or a local JSON file if SQLite is unavailable). No external API keys.\n4. Add a seed script with sample data and a `README` with run steps.\n5. Add a basic test for the core entity and the auth flow.\n6. Make `npm run dev` start everything with one command.\n\nKeep it boring and shippable. No payment integration yet — leave a clearly marked TODO.",
+    "safety_notes": "Work on a fresh branch. Hash passwords (never store plaintext) and never commit a real secret — use a `.env.example`. Do not add paid SDKs or external API keys. Keep the seed data fake.",
+    "expected_output": "A runnable repo: landing + auth + dashboard + one CRUD entity, SQLite/JSON storage, seed script, a passing smoke test, and a README that starts the app with one command."
+  },
+  {
+    "id": "saas-local-json-db",
+    "title": "Build a local JSON-database app (no server)",
+    "category": "build-a-saas",
+    "agent": "Cursor",
+    "use_case": "You want a small app that stores data in a local JSON file so you can prototype with zero infrastructure.",
+    "prompt": "Build a small app that uses a local JSON file as its database, for: {{APP_PURPOSE e.g. tracking habits}}.\n\n1. Create a tiny data layer (`db.js`) with `getAll`, `getById`, `create`, `update`, `remove` that reads/writes `data/db.json` atomically (write to a temp file, then rename).\n2. Validate every record against a simple schema before writing.\n3. Build a minimal UI (or CLI if I say so) for create/list/edit/delete of {{ENTITY}}.\n4. Handle the empty-file and corrupt-file cases gracefully.\n5. Add 3 tests for the data layer covering create, update, and a corrupt-file read.\n\nNo external database, no ORM, no paid services.",
+    "safety_notes": "Use atomic writes (temp file + rename) so a crash can't corrupt the JSON. Never store secrets in db.json. Add data/db.json to .gitignore if it will hold real data; commit only a sample.",
+    "expected_output": "A working app with an atomic JSON data layer, schema validation, CRUD UI/CLI, graceful corrupt-file handling, and 3 passing data-layer tests."
+  },
+  {
+    "id": "saas-local-first-crm",
+    "title": "Build a local-first CRM",
+    "category": "build-a-saas",
+    "agent": "Claude Code",
+    "use_case": "A solo founder or freelancer wants a private contact + deal tracker that runs locally with no cloud account.",
+    "prompt": "Build a local-first CRM that stores everything on disk (SQLite or JSON), no cloud account required.\n\nEntities: Contact (name, email, company, tags, notes), Deal (title, contact, stage, value, next action). Stages: lead -> contacted -> proposal -> won/lost.\n\n1. Scaffold the data model and storage layer with migrations or a versioned schema.\n2. Build views: contact list with search, contact detail with deal timeline, and a simple pipeline/kanban by stage.\n3. Add import from CSV and export to CSV.\n4. Add a 'follow-ups due' list based on each deal's next-action date.\n5. Seed with 10 fake contacts and deals. Add tests for stage transitions and CSV round-trip.\n\nKeep all data local. No external API keys.",
+    "safety_notes": "All data stays local — do not add any external sync or analytics. Treat contact data as private; keep real exports out of git. Validate CSV imports to avoid malformed rows corrupting storage.",
+    "expected_output": "A local CRM with contacts, deals, a pipeline view, CSV import/export, a follow-ups list, fake seed data, and tests for stage transitions + CSV round-trip."
+  },
+  {
+    "id": "saas-auth-starter",
+    "title": "Add email + password auth to an app",
+    "category": "build-a-saas",
+    "agent": "Codex",
+    "use_case": "An existing app needs real sign-up/login without paying for an auth provider.",
+    "prompt": "Add email + password authentication to this app using only open-source libraries.\n\n1. Detect the framework and existing routes first; reuse the project's conventions.\n2. Add sign-up, login, logout, and a password-reset stub (token printed to console for now, no email service).\n3. Hash passwords with bcrypt/argon2. Store users in the existing DB or SQLite.\n4. Issue an HTTP-only, same-site session cookie or signed JWT; protect at least one route.\n5. Add server-side validation (email format, min password length) and rate-limit login attempts.\n6. Add tests: successful login, wrong password rejected, protected route blocks anonymous users.\n\nDo not add a paid auth provider.",
+    "safety_notes": "Never store plaintext passwords; use a vetted hashing library. Use HTTP-only, secure, same-site cookies. Put the session/JWT secret in env (.env.example only). Don't log credentials or tokens. Rate-limit auth endpoints.",
+    "expected_output": "Working sign-up/login/logout with hashed passwords, a protected route, server-side validation, login rate limiting, and 3 passing auth tests."
+  },
+  {
+    "id": "saas-multitenant",
+    "title": "Add multi-tenant workspaces",
+    "category": "build-a-saas",
+    "agent": "Claude Code",
+    "use_case": "Your single-user app needs teams/workspaces so multiple users share isolated data.",
+    "prompt": "Add multi-tenant workspaces to this app so data is isolated per workspace.\n\n1. Add a `Workspace` and a `Membership` (user, workspace, role: owner/member) model.\n2. Every tenant-scoped row gets a `workspace_id`. Write a migration to backfill existing rows into a default workspace.\n3. Add middleware that resolves the current workspace and rejects cross-workspace access.\n4. Add invite-by-email (token-based, printed to console — no email service) and a workspace switcher in the UI.\n5. Audit every existing query to add the workspace filter; list anything you could not scope.\n6. Add tests proving user A cannot read or write user B's workspace data.\n\nNo paid services.",
+    "safety_notes": "The critical risk is data leakage across tenants — every tenant-scoped query MUST filter by workspace_id; enumerate any query you can't confidently scope instead of guessing. Run the backfill migration on a branch and back up data first. Authorize role-gated actions server-side.",
+    "expected_output": "Workspace + membership models, a backfill migration, workspace-scoping middleware, console-based invites, a switcher, and tests proving cross-tenant isolation."
+  },
+  {
+    "id": "fix-ts-errors-clean",
+    "title": "Fix TypeScript errors until clean",
+    "category": "fix-bugs",
+    "agent": "Codex",
+    "use_case": "Your build fails with dozens of TypeScript errors and you want them all resolved without weakening type safety.",
+    "prompt": "Goal: a clean `npx tsc --noEmit`.\n\n1. Run `npx tsc --noEmit` and collect every error.\n2. Group errors by root cause (missing types, wrong imports, null-safety, config).\n3. Fix the root cause, not each symptom. Prefer correct types over casts.\n4. Re-run after each group and report the remaining count.\n5. Stop only when the count is 0.\n\nConstraints: do not use `any`, `@ts-ignore`, or non-null `!` to silence errors unless you add a `// TODO:` explaining why it's unavoidable. Do not loosen `strict` in tsconfig.",
+    "safety_notes": "Work on a branch. Never weaken tsconfig strictness or blanket-cast to `any` to make errors disappear — that hides real bugs. Re-run the test suite after fixing to confirm no behavior changed.",
+    "expected_output": "Zero errors from `npx tsc --noEmit`, a summary of changes grouped by root cause, no new `any`/`@ts-ignore`, and a still-green test suite."
+  },
+  {
+    "id": "fix-failing-tests",
+    "title": "Make the failing test suite green",
+    "category": "fix-bugs",
+    "agent": "Claude Code",
+    "use_case": "Tests are red and you need them passing — by fixing real bugs, not by deleting assertions.",
+    "prompt": "The test suite is failing. Make it green by fixing the underlying code, not the tests.\n\n1. Run the suite and list every failing test with its error.\n2. For each, decide: is the test correct and the code wrong, or is the test outdated? State your reasoning.\n3. Fix code bugs first. Only change a test if the test itself encodes wrong behavior — and explain why.\n4. Re-run after each fix.\n5. At the end, report what was a real bug vs. a stale test.\n\nDo not skip, comment out, or weaken tests to force a pass.",
+    "safety_notes": "Never `skip`/`xit`/delete a test or soften an assertion just to go green — that hides regressions. If a test is genuinely wrong, change it and justify it explicitly. Work on a branch.",
+    "expected_output": "A fully green suite with no skipped/weakened tests, plus a breakdown of which failures were real code bugs vs. legitimately outdated tests."
+  },
+  {
+    "id": "fix-flaky-tests",
+    "title": "Diagnose and stabilize flaky tests",
+    "category": "fix-bugs",
+    "agent": "Cursor",
+    "use_case": "Tests pass sometimes and fail other times, eroding trust in CI.",
+    "prompt": "Find and fix flaky tests in this repo.\n\n1. Identify suspected flaky tests ({{LIST_OR_'detect them'}}). Run the suite several times if needed to surface them.\n2. For each, find the root cause: timing/race, shared mutable state, real time/Date, random data, network, or test-order dependence.\n3. Fix it properly: fake timers, deterministic seeds, isolate state, mock the network, await properly. Do NOT add blind sleeps or bump retries to mask it.\n4. Re-run each fixed test 10x to confirm stability.\n5. Report each flake's root cause and the fix.",
+    "safety_notes": "Do not paper over flakes with arbitrary sleeps, increased retries, or by disabling the test — find the real cause. Keep changes scoped to tests and the minimal source needed. Work on a branch.",
+    "expected_output": "Stabilized tests (each passing 10/10 reruns), a root-cause + fix note per flake, and no new blind sleeps or retry hacks."
+  },
+  {
+    "id": "fix-prod-stacktrace",
+    "title": "Find root cause from a stack trace",
+    "category": "fix-bugs",
+    "agent": "Gemini CLI",
+    "use_case": "You have an error/stack trace from production or logs and need the real root cause and a safe fix.",
+    "prompt": "Here is an error and stack trace:\n\n{{PASTE_STACK_TRACE}}\n\n1. Trace it to the exact file and line, then explain the actual root cause (not just where it threw).\n2. Identify the conditions that trigger it (inputs, state, timing).\n3. Write a failing test that reproduces it.\n4. Apply the minimal fix that makes that test pass without breaking others.\n5. Note any other call sites with the same latent bug.\n\nReport: root cause, reproduction, fix, and blast radius.",
+    "safety_notes": "Reproduce with a test before fixing — don't guess. Keep the fix minimal and avoid unrelated refactors. Redact any secrets or PII in logs you paste or quote. Work on a branch.",
+    "expected_output": "A clear root-cause explanation, a failing-then-passing reproduction test, a minimal fix, and a list of other affected call sites."
+  },
+  {
+    "id": "fix-perf-regression",
+    "title": "Hunt a performance regression",
+    "category": "fix-bugs",
+    "agent": "Claude Code",
+    "use_case": "Something got slow (a page, endpoint, or job) and you need to find and fix the bottleneck with evidence.",
+    "prompt": "Investigate a performance regression in {{AREA e.g. the /search endpoint}}.\n\n1. Establish a baseline: measure current timing with a quick benchmark or timing logs. Record the numbers.\n2. Profile to find the hot path (N+1 queries, accidental O(n^2), re-renders, missing index, sync I/O in a loop).\n3. Propose the smallest change that addresses the biggest cost. Explain the expected win before coding.\n4. Apply it, re-measure, and report before/after numbers.\n5. Add a lightweight guard (test or benchmark) so the regression can't silently return.\n\nOptimize based on measurements, not guesses.",
+    "safety_notes": "Measure before and after — never optimize on a hunch. Don't trade correctness for speed; keep behavior identical and covered by tests. Avoid premature micro-optimizations; target the proven bottleneck. Work on a branch.",
+    "expected_output": "Before/after measurements, a targeted fix for the real bottleneck, unchanged behavior with passing tests, and a guard against re-regression."
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "content-youtube-pipeline",
+    "title": "Create a YouTube automation pipeline",
+    "category": "create-content",
+    "agent": "Claude Code",
+    "use_case": "You want a repeatable, mostly-local pipeline that turns a topic into a script, title, description, chapters, and thumbnail brief — without paid APIs.",
+    "prompt": "Build a local content pipeline that turns a topic into a ready-to-record YouTube package.\n\nInput: a topic + target length in `input.md`.\nProduce, as files in `out/`:\n1. `script.md` — a hook, structured sections, and a CTA, timed to the target length.\n2. `title-options.md` — 10 title variations (curiosity + clarity, no clickbait lies).\n3. `description.md` — SEO description, chapters/timestamps, and a links section.\n4. `thumbnail-brief.md` — 3 thumbnail concepts (text overlay + visual).\n5. `tags.md` — relevant tags/keywords.\n\nRules:\n- Pure local files; do NOT call the YouTube API or upload anything. If you add an upload step, leave it as a documented dry-run stub.\n- Don't invent fake stats or fake citations.",
+    "safety_notes": "No uploads or YouTube API calls — keep it local; any publish step must be a clearly-marked dry-run stub with no hardcoded credentials. No clickbait that misrepresents content. Don't fabricate statistics or sources.",
+    "expected_output": "An `out/` folder with script.md, title-options.md, description.md (with chapters), thumbnail-brief.md, and tags.md — all generated locally, no uploads, no fabricated stats."
+  },
+  {
+    "id": "content-docs-from-code",
+    "title": "Create docs from a codebase",
+    "category": "create-content",
+    "agent": "Gemini CLI",
+    "use_case": "An undocumented repo needs a README and usage docs generated from the actual code.",
+    "prompt": "Generate documentation for this repo from the real code — do not invent features.\n\n1. Map entry points, public modules, and exported functions.\n2. Write `README.md`: what it does, install, quickstart, and a short example that actually runs.\n3. Write `docs/usage.md` with one section per public API, including signatures and a runnable snippet.\n4. Document required env vars and config in a table.\n5. Add a 'Project structure' tree.\n\nEvery code example must be copied from or verified against the real source. Mark anything uncertain with TODO.",
+    "safety_notes": "Do not fabricate APIs, flags, or env vars — verify against source. Don't expose secret values found in the repo; reference them by name only. Keep examples runnable and honest.",
+    "expected_output": "A README.md and docs/usage.md grounded in real code, with runnable examples, a config/env table, and a project-structure tree."
+  },
+  {
+    "id": "content-n8n-workflow-docs",
+    "title": "Create n8n workflow documentation",
+    "category": "create-content",
+    "agent": "Claude Code",
+    "use_case": "You have n8n workflow JSON exports and need clear human-readable docs for your team.",
+    "prompt": "Document the n8n workflow(s) exported in {{WORKFLOW_JSON_PATH}}.\n\n1. Parse the workflow JSON: list nodes, their types, and how they connect (trigger -> ... -> output).\n2. For each workflow, write: purpose, trigger, a step-by-step of what each node does, external services touched, and required credentials (by name only).\n3. Produce a simple flow diagram in Mermaid.\n4. Note error-handling branches and any ret/ rate limits.\n5. Add a 'how to import and configure' section and a list of env/credentials the operator must set.\n\nDescribe what's actually in the JSON — don't invent nodes.",
+    "safety_notes": "Reference credentials by name only — never copy secret values out of the workflow JSON into docs. Describe only nodes that exist in the export. Keep the exported JSON (which may contain secrets) out of public repos.",
+    "expected_output": "Per-workflow docs with purpose, trigger, node-by-node steps, a Mermaid diagram, external services + credential names, error handling, and import/config instructions."
+  },
+  {
+    "id": "content-changelog",
+    "title": "Generate a release changelog from git history",
+    "category": "create-content",
+    "agent": "Codex",
+    "use_case": "You're cutting a release and want a clean, human-readable changelog from commits.",
+    "prompt": "Generate a changelog for the range {{FROM_TAG}}..{{TO_TAG_OR_HEAD}}.\n\n1. Read commits with `git log {{FROM_TAG}}..{{TO_TAG}} --no-merges`.\n2. Group into Added / Changed / Fixed / Removed / Security (Keep a Changelog format). Drop noise (typo/chore-only commits) or summarize them.\n3. Rewrite each entry in clear user-facing language — what changed for the user, not the internal commit text.\n4. Call out breaking changes prominently with a migration note.\n5. Prepend the result to `CHANGELOG.md` under a new version heading and date.\n\nDon't invent changes that aren't in the history.",
+    "safety_notes": "Only include changes actually present in the git range — don't invent entries. Flag breaking changes clearly. Don't expose internal-only details (security specifics, secrets) that shouldn't be public. Edit only CHANGELOG.md.",
+    "expected_output": "A Keep-a-Changelog-formatted section grouped by type, user-facing wording, prominent breaking-change notes, prepended to CHANGELOG.md under a dated version heading."
+  },
+  {
+    "id": "content-blog-from-pr",
+    "title": "Turn a merged PR into a blog post",
+    "category": "create-content",
+    "agent": "Cursor",
+    "use_case": "You shipped something good and want an engineering blog post explaining it, drawn from the actual PR/diff.",
+    "prompt": "Write an engineering blog post based on this merged PR: {{PR_URL_OR_DIFF}}.\n\n1. Read the diff and PR description to understand the problem, the approach, and the trade-offs.\n2. Draft a post: hook, the problem, why it mattered, the approach (with a real code snippet from the diff), trade-offs considered, and the result.\n3. Keep it technical and specific — pull concrete details from the actual change.\n4. Add a short TL;DR at top and a 'what's next' at the end.\n5. Suggest 3 title options and a 1-line social blurb.\n\nUse only what's in the PR; mark anything you inferred.",
+    "safety_notes": "Use real details from the diff; mark inferences and don't overstate impact. Don't leak internal infra details, secrets, customer names, or unannounced plans. Code snippets should be the public-safe parts of the diff.",
+    "expected_output": "A technical blog post (TL;DR, problem, approach with a real snippet, trade-offs, result, what's next), 3 title options, and a social blurb — grounded in the actual PR."
+  },
+  {
+    "id": "auto-lead-gen-dashboard",
+    "title": "Build a lead-generation dashboard",
+    "category": "automate-business",
+    "agent": "Claude Code",
+    "use_case": "You have leads in a CSV/JSON and want a local dashboard to score, filter, and track outreach — no CRM subscription.",
+    "prompt": "Build a local lead-generation dashboard from {{LEADS_FILE (CSV/JSON)}}.\n\n1. Load leads (name, company, email, source, status). Detect and report the schema.\n2. Add a simple lead score (configurable weights, e.g. has-email + target-industry + company-size) and sort by it.\n3. Dashboard views: KPI cards (total, by status, by source), a filterable/sortable table, and an outreach status toggle (new -> contacted -> replied -> won/lost) persisted locally.\n4. Export the filtered view to CSV.\n5. Keep everything local (client-side parse or a tiny local server). No paid CRM/API.\n\nHandle messy/missing fields gracefully.",
+    "safety_notes": "Treat lead data as private PII — process locally, keep data files out of git, and never send it to third-party services. Respect anti-spam laws for any outreach (this tool only tracks, it doesn't send). Sanitize values before rendering (XSS).",
+    "expected_output": "A local dashboard with detected schema, a configurable lead score, KPI cards, a filterable table, a persisted outreach-status workflow, and CSV export — all offline."
+  },
+  {
+    "id": "auto-csv-report",
+    "title": "Automate a weekly CSV report",
+    "category": "automate-business",
+    "agent": "Codex",
+    "use_case": "You manually summarize a CSV every week and want a script that produces the report in one command.",
+    "prompt": "Write a script that turns {{CSV_PATH}} into a weekly summary report.\n\n1. Read the CSV; detect columns and types; report the schema.\n2. Compute the metrics I care about: {{METRICS e.g. totals, week-over-week change, top N by X}}.\n3. Output a readable `report.md` (and optionally a small HTML version) with tables and a short narrative summary of notable changes.\n4. Make the date window a parameter (default: last 7 days) and handle empty/missing data.\n5. Add a `--dry-run` that prints to stdout without writing files.\n6. Document how to schedule it (cron example) — but don't install anything.\n\nDeterministic and idempotent.",
+    "safety_notes": "Don't auto-send the report anywhere or install cron jobs — just generate the file and document scheduling. Treat the data as private (keep inputs/outputs out of git if sensitive). Handle missing data without crashing or producing misleading numbers.",
+    "expected_output": "A script that produces report.md (and optional HTML) with the requested metrics, a parameterized date window, --dry-run support, graceful empty-data handling, and documented (not installed) cron scheduling."
+  },
+  {
+    "id": "auto-invoice-generator",
+    "title": "Build a local invoice generator",
+    "category": "automate-business",
+    "agent": "Cursor",
+    "use_case": "A freelancer wants to generate clean PDF/HTML invoices from a simple data file, locally.",
+    "prompt": "Build a local invoice generator.\n\n1. Define an invoice as a small JSON/YAML file: from, to, line items (desc, qty, unit price), tax rate, notes, due date.\n2. Compute subtotals, tax, and total correctly (watch rounding — use integer cents).\n3. Render a clean, printable HTML invoice (and a PDF if a zero-cost local method is available; otherwise document 'print to PDF').\n4. Auto-generate sequential invoice numbers and persist the counter locally.\n5. Support multiple invoices and a simple list/index page.\n6. Include a sample invoice and a README.\n\nNo paid services; everything runs locally.",
+    "safety_notes": "Use integer cents for money math to avoid floating-point rounding errors. Keep real client/financial data out of git. Don't hardcode tax logic as legal advice — make rates configurable and note the user is responsible for compliance.",
+    "expected_output": "A local invoice generator: data-file input, correct cent-based math, printable HTML (PDF or documented print-to-PDF), sequential numbering, an index page, a sample invoice, and a README."
+  },
+  {
+    "id": "auto-email-digest",
+    "title": "Build an email digest script (dry-run safe)",
+    "category": "automate-business",
+    "agent": "Gemini CLI",
+    "use_case": "You want a script that compiles items (RSS, a JSON feed, a file) into a formatted email digest — without actually sending until you're ready.",
+    "prompt": "Build a script that compiles a digest email from {{SOURCE e.g. a list of RSS feeds or items.json}}.\n\n1. Fetch/read the items, dedupe, and sort by date or relevance.\n2. Render an email-friendly HTML digest (inline styles) and a plain-text version.\n3. DEFAULT TO DRY-RUN: write the digest to `out/digest.html` and print a summary. Only send if `--send` is passed.\n4. If `--send` is used, read SMTP config from env (.env.example provided) — never hardcode credentials.\n5. Handle a dead/empty source gracefully.\n6. Document how to schedule it (cron) without installing it.\n\nSafe by default — no accidental sends.",
+    "safety_notes": "Default to dry-run so nobody gets accidentally emailed; sending requires an explicit --send flag. Never hardcode SMTP credentials — use env only. Respect recipient consent and anti-spam laws. Honor source rate limits/robots when fetching.",
+    "expected_output": "A digest script that defaults to writing out/digest.html (HTML + pltext), dedupes and sorts items, sends only with --send using env-based SMTP, handles empty sources, and documents cron scheduling."
+  },
+  {
+    "id": "auto-scrape-to-sheet",
+    "title": "Scrape a public page into a structured CSV",
+    "category": "automate-business",
+    "agent": "Claude Code",
+    "use_case": "You need structured data from a public web page turned into a clean CSV, respectfully and locally.",
+    "prompt": "Scrape structured data from {{PUBLIC_URL}} into a CSV.\n\n1. First check the site's robots.txt and terms; if scraping is disallowed, stop and tell me.\n2. Fetch the page politely (a single request, a real user-agent, and a delay if paginating).\n3. Parse the target fields: {{FIELDS e.g. title, price, link}}. Report the selectors you used.\n4. Write `out/data.csv` with a header row; handle missing fields as empty, not crashes.\n5. Save the raw HTML locally so re-parsing doesn't re-fetch.\n6. Add a `--limit` for testing on a few rows first.\n\nBe a good citizen: low volume, cached, respectful.",
+    "safety_notes": "Check robots.txt and the site's terms first — stop if scraping is disallowed. Scrape at low volume with delays and caching; never hammer a site (that's abuse/DoS). Don't collect personal data or bypass auth/paywalls. Keep scraped data local.",
+    "expected_output": "A polite scraper that respects robots.txt, writes out/data.csv with the requested fields, caches raw HTML, handles missing fields, supports --limit, and reports the selectors used."
+  }
+]

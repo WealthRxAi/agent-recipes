@@ -1,0 +1,102 @@
+[
+  {
+    "id": "analyze-security-audit",
+    "title": "Audit repo security without changing files",
+    "category": "analyze-repo",
+    "agent": "Claude Code",
+    "use_case": "You want a security review of a repo but must not let the agent change anything.",
+    "prompt": "Perform a READ-ONLY security audit of this repository. Do NOT edit, create, move, or delete any file — produce a report only.\n\n1. Scan for hardcoded secrets, API keys, and tokens.\n2. Check dependencies for known-risky or outdated packages.\n3. Look for injection risks (SQL, command, XSS), unsafe deserialization, and missing input validation.\n4. Review auth/session handling and access control.\n5. Check for secrets or sensitive files committed to git history.\n\nFor each finding: severity (High/Med/Low), file:line, why it matters, and a suggested fix. End with a prioritized top-5 list.",
+    "safety_notes": "READ-ONLY: make zero file changes and run no destructive or network-mutating commands. Redact any discovered secret — never print full values. This is a first-pass review, not a substitute for a professional pentest.",
+    "expected_output": "A markdown report grouped by severity with file:line references and fixes, plus a prioritized top-5 — and zero changes to the working tree."
+  },
+  {
+    "id": "analyze-issues-from-todos",
+    "title": "Generate GitHub issues from TODOs",
+    "category": "analyze-repo",
+    "agent": "Codex",
+    "use_case": "Your code is full of TODO/FIXME/HACK comments and you want them turned into trackable issues.",
+    "prompt": "Find actionable TODO/FIXME/HACK/XXX comments and turn them into well-formed GitHub issues.\n\n1. Search the repo for TODO/FIXME/HACK/XXX (and similar). List each with file:line and surrounding context.\n2. For each, draft an issue: a clear title, a body explaining the problem and acceptance criteria, suggested labels, and a rough effort estimate (S/M/L).\n3. Group related TODOs into a single issue where it makes sense; drop stale/meaningless ones (note which).\n4. Output everything to `issues.md` as a list I can review.\n5. Only create real GitHub issues if I explicitly say so (and via `gh` with my confirmation) — otherwise just the file.\n\nDon't create issues without my go-ahead.",
+    "safety_notes": "Default to writing issues.md only — do NOT create real issues automatically; require explicit confirmation before any `gh issue create`. Don't include secrets or sensitive context found near the TODOs. Avoid duplicating existing open issues.",
+    "expected_output": "An issues.md with one well-formed issue per actionable TODO (title, body, acceptance criteria, labels, effort), grouped/deduped sensibly — and no real issues created without confirmation."
+  },
+  {
+    "id": "analyze-architecture-map",
+    "title": "Map an unfamiliar codebase",
+    "category": "analyze-repo",
+    "agent": "Gemini CLI",
+    "use_case": "You just cloned a repo and need a fast, accurate mental model of how it's structured.",
+    "prompt": "Give me a map of this codebase so I can get productive fast.\n\n1. Identify entry points, the main modules, and their responsibilities.\n2. Draw the high-level architecture as a Mermaid diagram (components + data flow).\n3. Explain the request/data lifecycle for one core flow, step by step, with file references.\n4. List external dependencies and what each is used for.\n5. Point out where to add a new feature of type {{FEATURE_TYPE}}, and any risky/confusing areas.\n6. Note the build/test/run commands.\n\nGround everything in the real files — cite file:line.",
+    "safety_notes": "Read-only analysis — don't modify files. Cite real file paths; mark anything inferred rather than confirmed. Don't expose secrets found while exploring. Keep the summary accurate over impressive.",
+    "expected_output": "An architecture overview with a Mermaid diagram, a traced core flow with file references, a dependency list, guidance on where to add features, risky-area callouts, and the build/test/run commands."
+  },
+  {
+    "id": "analyze-dead-code",
+    "title": "Find dead code and unused dependencies",
+    "category": "analyze-repo",
+    "agent": "Cursor",
+    "use_case": "The codebase has accumulated unused files, exports, and dependencies you'd like to safely remove.",
+    "prompt": "Identify dead code and unused dependencies. Report first, remove only on my confirmation.\n\n1. Find unreferenced files, unused exports, and unreachable functions. Show evidence (no inbound references) for each.\n2. Find dependencies in package manifest that aren't imported anywhere.\n3. Flag false-positive risks: dynamic imports, reflection, framework conventions, build-time-only deps, test-only usage.\n4. Produce a removal plan ranked by confidence (safe / probably / risky).\n5. Only after I approve, remove the 'safe' set on a branch and run the build + tests to confirm nothing broke.\n\nEvidence before deletion.",
+    "safety_notes": "Don't delete on first pass — produce an evidence-backed plan and wait for approval. Beware dynamic imports, reflection, and framework magic that static analysis misses. After any removal, run build + full tests on a branch before trusting it.",
+    "expected_output": "A confidence-ranked report of dead files/exports/deps with evidence and false-positive caveats, then (only after approval) a verified removal of the safe set with green build + tests."
+  },
+  {
+    "id": "analyze-onboarding-guide",
+    "title": "Generate a contributor onboarding guide",
+    "category": "analyze-repo",
+    "agent": "Claude Code",
+    "use_case": "New contributors keep asking the same setup questions; you want a guide generated from the real repo.",
+    "prompt": "Create a contributor onboarding guide (`ONBOARDING.md`) from this repo.\n\n1. Document prerequisites (languages, tools, versions detected from config files).\n2. Step-by-step local setup: clone, install, env vars (from .env.example), seed/data, run, and how to confirm it's working.\n3. How to run tests and the linter; the expected green state.\n4. The branch/PR workflow and commit conventions (infer from existing history/config).\n5. A 'your first contribution' walkthrough: where to find good first tasks and the file map for common changes.\n6. Common gotchas you can spot from the setup.\n\nVerify steps against the real config — don't guess versions.",
+    "safety_notes": "Verify setup steps and versions against real config files — wrong onboarding steps waste every newcomer's time. Reference env vars by name (from .env.example), never real secret values. Mark anything unverified as TODO.",
+    "expected_output": "An ONBOARDING.md with verified prerequisites, step-by-step setup, test/lint instructions, the PR/commit workflow, a first-contribution walkthrough, and common gotchas — grounded in the repo."
+  },
+  {
+    "id": "launch-investor-roadmap",
+    "title": "Create an investor-ready technical roadmap",
+    "category": "launch-product",
+    "agent": "Claude Code",
+    "use_case": "You need a credible technical roadmap to show investors or stakeholders, derived from your product and current code.",
+    "prompt": "Build an investor-ready technical roadmap for: {{PRODUCT}} (current state: {{WHERE_YOU_ARE}}).\n\n1. Summarize the current architecture and what's already shipped (ground it in the repo if available).\n2. Define phases (Now / Next / Later) with concrete milestones, each tied to a business outcome.\n3. For each phase: key features, technical work, rough effort, and the main risks + mitigations.\n4. Call out scalability, security, and reliability investments and when they're needed.\n5. Add a one-slide-style summary and a realistic timeline (quarters, not exact dates).\n6. Keep claims honest and assumptions explicit.\n\nCredible over hype.",
+    "safety_notes": "Keep projections honest — don't overpromise timelines or invent metrics; mark assumptions. Don't expose secrets or sensitive IP if this doc will be shared. Tie technical work to outcomes, not buzzwords.",
+    "expected_output": "A roadmap doc: current state, Now/Next/Later phases with milestones tied to outcomes, per-phase effort + risks/mitigations, scalability/security investments, a summary, and a quarter-level timeline with explicit assumptions."
+  },
+  {
+    "id": "launch-readme-polish",
+    "title": "Write a launch-ready README",
+    "category": "launch-product",
+    "agent": "Cursor",
+    "use_case": "Your project works but the README is weak; you want one that converts visitors into users and stars.",
+    "prompt": "Rewrite this repo's README to be launch-ready and compelling.\n\n1. Open with a one-line value prop and a short 'why it exists'.\n2. Add a 30-second quickstart that actually works (verify commands against the repo).\n3. Show real usage examples (copy-paste) and, if visual, a screenshot/GIF placeholder with a note to add it.\n4. Add: features, installation, configuration table, FAQ, contributing link, license.\n5. Make it skimmable with badges (build/license) and clear headings.\n6. Keep it honest — no features that don't exist.\n\nWrite for a developer skimming in 10 seconds, then deciding to try it.",
+    "safety_notes": "Verify every command and feature against the real repo — a broken quickstart kills trust. Don't claim non-existent features or fake metrics/testimonials. Use placeholders for media that doesn't exist yet.",
+    "expected_output": "A polished README: value prop, why-it-exists, working 30-second quickstart, copy-paste examples, features, config table, FAQ, contributing/license, and badges — all accurate to the repo."
+  },
+  {
+    "id": "launch-ph-kit",
+    "title": "Create a Product Hunt launch kit",
+    "category": "launch-product",
+    "agent": "Claude Code",
+    "use_case": "You're launching on Product Hunt (or similar) and want all the copy assets ready in one pass.",
+    "prompt": "Create a Product Hunt launch kit for: {{PRODUCT_ONE_LINER}} (details: {{KEY_DETAILS}}).\n\nProduce a `launch/` folder with:\n1. `tagline.md` — 5 tagline options (<= 60 chars).\n2. `description.md` — the listing description (what, who, why now).\n3. `maker-comment.md` — a first comment from the maker (story + ask for feedback).\n4. `gallery-brief.md` — 4-6 gallery image/screenshot ideas with captions.\n5. `social.md` — launch-day posts for X/LinkedIn + 3 reply-bait follow-ups.\n6. `faq.md` — answers to the 8 likely questions.\n\nHonest, specific, no hype-speak or fake numbers.",
+    "safety_notes": "Keep all claims truthful — no fabricated user counts, awards, or testimonials. Don't promise features you can't ship at launch. Avoid manipulative engagement bait; keep it genuine.",
+    "expected_output": "A launch/ folder: taglines, listing description, maker comment, gallery brief, social posts, and an FAQ — specific, honest, and ready to paste."
+  },
+  {
+    "id": "launch-seo-pages",
+    "title": "Generate SEO landing pages",
+    "category": "launch-product",
+    "agent": "Gemini CLI",
+    "use_case": "You want a set of SEO-targeted landing pages for your product's key use cases/keywords.",
+    "prompt": "Generate SEO landing pages for these use cases/keywords: {{LIST}}.\n\nFor each, create an HTML page with:\n1. A unique, keyword-aligned <title> and meta description (no stuffing).\n2. One clear H1, structured H2s, and genuinely useful content for that use case.\n3. Proper semantic HTML, internal links between the pages, and JSON-LD structured data where relevant.\n4. A CTA to {{PRIMARY_ACTION}}.\n5. Fast, accessible, mobile-friendly markup; descriptive alt text.\n6. A simple `sitemap.xml` listing the pages.\n\nWrite real, helpful content — not thin or duplicated boilerplate.",
+    "safety_notes": "No keyword stuffing, cloaking, or doorway/thin pages — those get penalized and hurt users. Each page must offer genuine, distinct value. Keep claims honest. Don't duplicate content across pages.",
+    "expected_output": "One useful SEO landing page per keyword (unique title/meta, semantic structure, internal links, JSON-LD, accessible markup, CTA) plus a sitemap.xml — no thin or stuffed content."
+  },
+  {
+    "id": "launch-demo-script",
+    "title": "Write a demo video script + storyboard",
+    "category": "launch-product",
+    "agent": "Codex",
+    "use_case": "You need a tight demo video for launch and want a script and shot-by-shot storyboard.",
+    "prompt": "Write a {{LENGTH e.g. 90-second}} demo video script + storyboard for: {{PRODUCT}}.\n\n1. Open with a 5-second hook stating the problem in the viewer's words.\n2. Script the narration in short, spoken-style lines with timestamps.\n3. For each line, give a matching on-screen action/shot (the storyboard column): what's shown, click path, and on-screen text.\n4. Show the core 'aha' moment within the first 30 seconds.\n5. End with a clear CTA and where to go next.\n6. Keep it real — demo actual features, no vaporware.\n\nOutput as a two-column script/storyboard table.",
+    "safety_notes": "Demo only real, working features — no mockups presented as live product. Don't show real customer data or secrets on screen; use demo data. Keep timing realistic for the stated length.",
+    "expected_output": "A two-column script + storyboard: timestamped spoken narration paired with on-screen actions/shots, the aha moment in the first 30s, and a closing CTA — covering only real features."
+  }
+]

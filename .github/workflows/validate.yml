@@ -1,0 +1,38 @@
+name: validate
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate-recipes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Rebuild recipes.json from data/
+        run: node scripts/build.js
+
+      - name: Fail if recipes.json is out of date
+        run: |
+          if ! git diff --quiet -- recipes.json; then
+            echo "::error::recipes.json is out of date. Run 'npm run build' and commit the result."
+            git --no-pager diff -- recipes.json
+            exit 1
+          fi
+
+      - name: Validate recipes
+        run: node scripts/validate-recipes.js
+
+      - name: Smoke-test the CLI
+        run: |
+          node bin/agent-recipes.js list > /dev/null
+          node bin/agent-recipes.js search "landing page" > /dev/null

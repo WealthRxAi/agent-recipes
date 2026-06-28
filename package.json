@@ -1,0 +1,39 @@
+{
+  "name": "agent-recipes",
+  "version": "1.0.0",
+  "description": "Free copy-paste recipes for Claude Code, Codex, Cursor, Gemini CLI, and AI coding agents.",
+  "bin": {
+    "agent-recipes": "bin/agent-recipes.js"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "validate": "node scripts/validate-recipes.js",
+    "list": "node bin/agent-recipes.js list",
+    "search": "node bin/agent-recipes.js search",
+    "show": "node bin/agent-recipes.js show",
+    "test": "node scripts/validate-recipes.js"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "claude-code",
+    "codex",
+    "cursor",
+    "gemini-cli",
+    "prompts",
+    "recipes",
+    "llm",
+    "coding-agent"
+  ],
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=16"
+  },
+  "files": [
+    "bin",
+    "recipes.json",
+    "recipes",
+    "scripts"
+  ]
+}

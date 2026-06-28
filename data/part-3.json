@@ -1,0 +1,102 @@
+[
+  {
+    "id": "test-write-missing",
+    "title": "Write the missing tests",
+    "category": "write-tests",
+    "agent": "Claude Code",
+    "use_case": "A module has little or no test coverage and you want a meaningful suite, fast.",
+    "prompt": "Add tests for {{FILE_OR_MODULE}} using the project's existing test runner.\n\n1. Detect the test framework, folder convention, and style first — match them.\n2. Read the module and list its public functions and their branches.\n3. For each, write tests for the happy path, edge cases (empty, null, large, boundary), and error handling.\n4. Name tests by behavior, e.g. `returns 0 for an empty cart`.\n5. Run the suite and report coverage before/after.\n\nTest behavior, not internals. If a test exposes a real bug, leave it failing and call it out.",
+    "safety_notes": "Don't change production code to make testing easier unless it's a genuine bug fix (note it). Never weaken an assertion to force a pass. No real network/DB calls in unit tests — mock them.",
+    "expected_output": "New test files in the project's convention covering happy/edge/error paths, all green except any that expose real bugs (clearly reported), and a coverage delta."
+  },
+  {
+    "id": "test-e2e-playwright",
+    "title": "Add end-to-end tests with Playwright",
+    "category": "write-tests",
+    "agent": "Codex",
+    "use_case": "You want browser-level tests of the critical user journeys (sign-up, checkout, core flow).",
+    "prompt": "Add Playwright end-to-end tests for the critical flows: {{FLOWS e.g. sign up, log in, create item}}.\n\n1. Install and configure Playwright if not present (free, open-source).\n2. Write one spec per flow, asserting on user-visible outcomes (text, URL, visible elements) — not internal IDs.\n3. Use role/text selectors for resilience; avoid brittle CSS/xpath where possible.\n4. Set up test data via the app's own UI or a seed step; clean up after.\n5. Make tests runnable headless in CI with `npx playwright test`.\n6. Report which flows are covered and any you couldn't automate.\n\nDeterministic, no flaky waits — use auto-waiting/web-first assertions.",
+    "safety_notes": "Run E2E against a local/dev environment, never production. Don't hardcode real credentials — use env/test accounts. Use Playwright's auto-waiting instead of fixed sleeps to avoid flakiness. Keep test data isolated and cleaned up.",
+    "expected_output": "Configured Playwright, one resilient spec per critical flow asserting user-visible outcomes, headless CI-ready runs, and a coverage report of flows tested vs. skipped."
+  },
+  {
+    "id": "test-coverage-80",
+    "title": "Raise coverage to 80% on critical paths",
+    "category": "write-tests",
+    "agent": "Cursor",
+    "use_case": "Coverage is low and you want to raise it meaningfully — on the code that matters, not trivial getters.",
+    "prompt": "Raise test coverage to ~80% focused on critical paths.\n\n1. Run coverage and list the lowest-covered files that are also high-risk/high-traffic. Prioritize those.\n2. For each, add behavior-focused tests for the important branches and error handling.\n3. Skip trivial code (simple getters, config) — chase meaningful coverage, not the number alone.\n4. Re-run coverage after each file and report progress toward 80%.\n5. Note any code that's hard to test and why (suggest a small refactor if it would help).\n\nQuality over vanity metrics — don't write assertion-free tests to pad coverage.",
+    "safety_notes": "Don't game the metric with assertion-free or trivial tests — coverage must reflect real verification. Mock external systems. If a refactor is needed to make code testable, propose it rather than forcing a brittle test. Work on a branch.",
+    "expected_output": "Coverage near 80% concentrated on critical paths, behavior-focused tests with real assertions, a progress report, and notes on hard-to-test code."
+  },
+  {
+    "id": "test-from-bug",
+    "title": "Write a regression test from a bug report",
+    "category": "write-tests",
+    "agent": "Claude Code",
+    "use_case": "A bug was reported (or fixed) and you want a test that locks in the correct behavior so it never returns.",
+    "prompt": "Turn this bug into a permanent regression test:\n\n{{BUG_DESCRIPTION_OR_REPRO_STEPS}}\n\n1. Reproduce the bug as a failing test that asserts the CORRECT expected behavior.\n2. Confirm it fails against the buggy code (if not already fixed).\n3. If the fix isn't in yet, apply the minimal fix; then the test should pass.\n4. Name the test after the bug and reference the issue/ticket in a comment.\n5. Check for sibling cases that could have the same bug and add tests for them too.\n\nThe test must fail on the old behavior and pass on the correct behavior.",
+    "safety_notes": "Make sure the test actually fails before the fix — a test that passes either way proves nothing. Keep the fix minimal and scoped. Don't include real PII from the bug report; anonymize repro data. Work on a branch.",
+    "expected_output": "A named regression test that fails on the buggy behavior and passes on the fix, a reference to the issue, the minimal fix if needed, and tests for any sibling cases."
+  },
+  {
+    "id": "test-api-contract",
+    "title": "Add API contract tests",
+    "category": "write-tests",
+    "agent": "Gemini CLI",
+    "use_case": "You want to guarantee your API's responses keep their shape so you don't silently break clients.",
+    "prompt": "Add contract tests for the API at {{BASE_PATH or 'these routes'}}.\n\n1. List the endpoints, methods, and their documented/observed request + response shapes.\n2. For each, write a test asserting status code, response schema (field names + types), and key invariants — not exact volatile values.\n3. Cover error responses too (400/401/404/422) with their expected shapes.\n4. Use the existing test runner; spin up the app or use a test client.\n5. Flag any endpoint whose actual response differs from its documentation.\n\nAssert structure and contracts, not brittle exact payloads.",
+    "safety_notes": "Run against a local/test instance, not production. Don't bake in secrets or real tokens. Assert schema/types, not volatile values (timestamps, ids), to avoid false failures. Report contract mismatches rather than loosening tests to hide them.",
+    "expected_output": "Contract tests per endpoint asserting status, response schema, and invariants (including error shapes), runnable locally/CI, plus a list of endpoints that diverge from their docs."
+  },
+  {
+    "id": "ship-idea-to-prd",
+    "title": "Convert a messy idea into a PRD",
+    "category": "ship-mvp",
+    "agent": "Claude Code",
+    "use_case": "You have a jumble of thoughts and need a clear product requirements doc before building.",
+    "prompt": "Turn these raw notes into a tight PRD:\n\n{{PASTE_MESSY_NOTES}}\n\nProduce a PRD with: Problem, Target user, Goals & non-goals, Core user stories (prioritized P0/P1/P2), Key flows, MVP scope vs. later, Success metrics, Open questions/risks, and a rough milestone plan.\n\nRules:\n1. Ask me up to 5 clarifying questions first if anything critical is ambiguous.\n2. Be ruthless about MVP scope — cut anything not needed to validate the core.\n3. Don't invent requirements I didn't imply; mark assumptions clearly.\n4. Keep it skimmable (headings, bullets, a scope table).",
+    "safety_notes": "Mark assumptions explicitly and don't invent hard requirements. Ask before guessing on anything that changes scope materially. This is a planning doc — keep proprietary/idea details in your own repo, not a public one.",
+    "expected_output": "A skimmable PRD: problem, users, goals/non-goals, prioritized user stories, flows, MVP scope table, success metrics, risks/open questions, and milestones — with assumptions flagged."
+  },
+  {
+    "id": "ship-stripe-free-waitlist",
+    "title": "Create a Stripe-free waitlist MVP",
+    "category": "ship-mvp",
+    "agent": "Claude Code",
+    "use_case": "You want to validate demand with a waitlist landing page before building the product — no payments, no paid services.",
+    "prompt": "Build a waitlist MVP for: {{PRODUCT_ONE_LINER}}.\n\n1. A landing page: clear headline, the problem, what they're signing up for, and an email form.\n2. Store signups locally (SQLite or a JSON file) with email + timestamp + optional referral source. Dedupe emails.\n3. A simple confirmation state after signup and a basic 'X people waiting' counter.\n4. An admin/export route or script to dump signups to CSV.\n5. Validate emails server-side; protect against obvious spam (honeypot field, basic rate limit).\n\nNo Stripe, no email provider, no paid APIs — just capture and store.",
+    "safety_notes": "Store emails responsibly: keep the signups file out of git, validate input, and add a basic anti-spam honeypot/rate limit. Don't email anyone without consent. Use .env.example for any config. No paid services.",
+    "expected_output": "A waitlist landing page, local deduped signup storage with timestamps, a confirmation state and counter, a CSV export, server-side email validation, and basic spam protection — no payments."
+  },
+  {
+    "id": "ship-chrome-extension",
+    "title": "Build a Chrome extension MVP",
+    "category": "ship-mvp",
+    "agent": "Cursor",
+    "use_case": "You want a working Manifest V3 Chrome extension that does one useful thing on web pages.",
+    "prompt": "Build a Manifest V3 Chrome extension that: {{WHAT_IT_DOES e.g. highlights and saves selected text}}.\n\n1. Create `manifest.json` (MV3) requesting only the minimum permissions needed — justify each.\n2. Implement the content script and/or popup UI and a service worker if needed.\n3. Persist data with `chrome.storage` (not localStorage).\n4. Add an options/popup page to view or manage saved data.\n5. Write a README with exact 'Load unpacked' install steps for testing.\n6. Keep it dependency-light; no remote code (MV3 forbids it).\n\nWorks by loading unpacked in chrome://extensions.",
+    "safety_notes": "Request the minimum permissions and justify each — over-broad host permissions are a privacy/security risk and block store review. No remote/eval'd code (MV3 forbids it). Don't exfiltrate page data; keep storage local. Don't hardcode secrets.",
+    "expected_output": "A loadable MV3 extension with a minimal-permission manifest, content script/popup, chrome.storage persistence, an options page, and a README with 'Load unpacked' steps."
+  },
+  {
+    "id": "ship-cli-tool",
+    "title": "Ship a zero-dependency CLI tool",
+    "category": "ship-mvp",
+    "agent": "Codex",
+    "use_case": "You want a small, installable command-line tool with no dependencies that does one job well.",
+    "prompt": "Build a zero-dependency CLI in {{LANGUAGE e.g. Node.js}} that: {{WHAT_IT_DOES}}.\n\n1. Support subcommands and `--flags`; parse args by hand (no arg-parsing dependency).\n2. Implement `--help` and a clear usage message; exit with proper codes (0 success, non-zero on error).\n3. Read from stdin/files and write to stdout so it composes in pipelines.\n4. Handle bad input gracefully with helpful errors (no stack-trace dumps for user errors).\n5. Add a `bin` entry so it can be run/installed, and a README with examples.\n6. Add a couple of tests for the core logic.\n\nNo runtime dependencies.",
+    "safety_notes": "Validate and sanitize all user input/paths; avoid shelling out with unsanitized args (command injection). Don't write outside intended paths. Use proper exit codes. Keep zero runtime deps as specified.",
+    "expected_output": "A zero-dependency CLI with subcommands/flags, `--help`, stdin/stdout support, graceful error handling, a bin entry, a README with examples, and core-logic tests."
+  },
+  {
+    "id": "ship-weekend-mvp",
+    "title": "Plan and scaffold a weekend MVP",
+    "category": "ship-mvp",
+    "agent": "Claude Code",
+    "use_case": "You have a weekend and want a realistic plan plus a running skeleton for a focused MVP.",
+    "prompt": "Help me ship a weekend MVP for: {{IDEA}}.\n\n1. First, define the single core loop that proves the idea, and cut everything else. Show me the scoped feature list and a Sat/Sun timeline before coding.\n2. Pick the simplest stack that ships fast (no paid services) and justify it in two lines.\n3. Scaffold a running skeleton: one core flow end-to-end, local storage, and a README.\n4. Leave clearly-marked TODOs for the deferred features.\n5. Add a 'how to demo this' section so I can show it.\n\nBias to shipping one working thing over many half-built things.",
+    "safety_notes": "Keep scope ruthless — defer (don't half-build) extras to avoid an unshippable weekend. No paid services/API keys. Use .env.example for config. Work on a branch and commit in working increments.",
+    "expected_output": "A scoped feature list, a Sat/Sun timeline, a justified simple stack, a running end-to-end skeleton with local storage, marked TODOs for deferred work, and demo instructions."
+  }
+]
