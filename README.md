@@ -8,7 +8,7 @@
 
 Stop wrestling with vague prompts. Copy a recipe, paste it into your agent, ship the thing.
 
-[![validate](https://github.com/agent-recipes/agent-recipes/actions/workflows/validate.yml/badge.svg)](https://github.com/agent-recipes/agent-recipes/actions/workflows/validate.yml)
+[![validate](https://github.com/WealthRxAi/agent-recipes/actions/workflows/validate.yml/badge.svg)](https://github.com/WealthRxAi/agent-recipes/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-7c93ff.svg)](LICENSE)
 ![Recipes](https://img.shields.io/badge/recipes-50-51e1b0)
 ![Dependencies](https://img.shields.io/badge/dependencies-0-success)
@@ -41,7 +41,7 @@ Most people relearn the same prompts over and over. **agent-recipes** is a free,
 No install. No dependencies. Just clone and run.
 
 ```bash
-git clone https://github.com/agent-recipes/agent-recipes
+git clone https://github.com/WealthRxAi/agent-recipes
 cd agent-recipes
 
 # List all 50 recipes
